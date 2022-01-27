@@ -76,7 +76,7 @@ class MSCollectionPlan
 	 *
 	 * @return bool
 	 */
-	private function IsSubscriptionToConsider(): bool
+	protected function IsSubscriptionToConsider(): bool
 	{
 		return (empty($this->aMSObjectsToConsider) ? false : true);
 	}
@@ -86,7 +86,7 @@ class MSCollectionPlan
 	 *
 	 * @return bool
 	 */
-	private function IsResourceGroupToConsider(): bool
+	protected function IsResourceGroupToConsider(): bool
 	{
 		foreach ($this->aMSObjectsToConsider as $sSubscription => $aResourceGroup) {
 			if (!empty($aResourceGroup)) {
