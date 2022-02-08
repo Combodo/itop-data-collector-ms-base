@@ -3,7 +3,7 @@
 class MSCollectionPlan
 {
 	static protected $oMSCollectionPlan;
-	private $aMSObjectsToConsider = [];
+	protected $aMSObjectsToConsider = [];
 
 	public function __construct()
 	{

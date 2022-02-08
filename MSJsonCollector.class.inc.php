@@ -27,7 +27,7 @@ class MSJsonCollector extends JsonCollector
 	protected $sResource;
 	private $sClientId;
 	private $sClientSecret;
-	private $sTenantId;
+	protected $sTenantId;
 	private $bIsAuthenticated = false;
 	protected $sBearerToken = '';
 	private $sBearerTokenRequestTime;
@@ -35,7 +35,7 @@ class MSJsonCollector extends JsonCollector
 	protected $aParamsSourceJson = [];
 	protected $sMSClass = '';
 	protected $sApiVersion = '';
-	protected static $aURIPArameters = [];
+	protected static $aURIParameters = [];
 	protected $sJsonFile = '';
 	protected $aFieldsPos = [];
 	protected $oMSCollectionPlan;
@@ -220,7 +220,7 @@ class MSJsonCollector extends JsonCollector
 	 */
 	public static function NeedsResourceGroupsForCollector(): bool
 	{
-		if (array_key_exists(2, static::$aURIPArameters)) {
+		if (array_key_exists(2, static::$aURIParameters)) {
 			return true;
 		}
 
@@ -301,13 +301,15 @@ class MSJsonCollector extends JsonCollector
 	 */
 	protected function RetrieveDataFromMS(): array
 	{
+		$bUrlPosted = false;
 		$bSucceed = false;
 		$aObjectsToConsider = $this->oMSCollectionPlan->GetMSObjectsToConsider();
 		$aConcatenatedResults = [];
-		switch (sizeof(static::$aURIPArameters)) {
+		switch (sizeof(static::$aURIParameters)) {
 			case 0:
 				$sUrl = $this->BuildUrl([]);
 				list($bSucceed, $aResults) = $this->Post($sUrl);
+				$bUrlPosted = true;
 				if ($bSucceed && !empty($aResults['value'])) {
 					$aConcatenatedResults = $aResults;
 					// Report list of discovered resource group to the collection plan
@@ -317,8 +319,9 @@ class MSJsonCollector extends JsonCollector
 
 			case 1:
 				foreach ($aObjectsToConsider as $sObjectL1 => $aObjectL1) {
-					$sUrl = $this->BuildUrl([static::$aURIPArameters[1] => $sObjectL1]);
+					$sUrl = $this->BuildUrl([static::$aURIParameters[1] => $sObjectL1]);
 					list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
+					$bUrlPosted = true;
 					if ($bSucceed && !empty($aResults['value'])) {
 						if (empty($aConcatenatedResults)) {
 							$aConcatenatedResults = $aResults;
@@ -334,8 +337,9 @@ class MSJsonCollector extends JsonCollector
 			case 2:
 				foreach ($aObjectsToConsider as $sObjectL1 => $aObjectL1) {
 					foreach ($aObjectL1 as $sObjectL2 => $aObjectL2) {
-						$sUrl = $this->BuildUrl([static::$aURIPArameters[1] => $sObjectL1, static::$aURIPArameters[2] => $sObjectL2]);
+						$sUrl = $this->BuildUrl([static::$aURIParameters[1] => $sObjectL1, static::$aURIParameters[2] => $sObjectL2]);
 						list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
+						$bUrlPosted = true;
 						if ($bSucceed && !empty($aResults['value'])) {
 							if (empty($aConcatenatedResults)) {
 								$aConcatenatedResults = $aResults;
@@ -354,11 +358,12 @@ class MSJsonCollector extends JsonCollector
 					foreach ($aObjectL1 as $sObjectL2 => $aObjectL2) {
 						foreach ($aObjectL2 as $sObjectL3 => $aObjectL3) {
 							$sUrl = $this->BuildUrl([
-								static::$aURIPArameters[1] => $sObjectL1,
-								static::$aURIPArameters[2] => $sObjectL2,
-								static::$aURIPArameters[3] => $sObjectL3,
+								static::$aURIParameters[1] => $sObjectL1,
+								static::$aURIParameters[2] => $sObjectL2,
+								static::$aURIParameters[3] => $sObjectL3,
 							]);
 							list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
+							$bUrlPosted = true;
 							if ($bSucceed && !empty($aResults['value'])) {
 								if (empty($aConcatenatedResults)) {
 									$aConcatenatedResults = $aResults;
@@ -377,7 +382,7 @@ class MSJsonCollector extends JsonCollector
 				break;
 		}
 
-		return [$bSucceed, $aConcatenatedResults];
+		return [$bUrlPosted, $bSucceed, $aConcatenatedResults];
 	}
 
 	/**
@@ -411,7 +416,12 @@ class MSJsonCollector extends JsonCollector
 
 		// Retrieve data from MS
 		Utils::Log(LOG_DEBUG, 'Retrieve '.$this->sMSClass.' data from MS');
-		list ($bSucceed, $aResults) = $this->RetrieveDataFromMS();
+		list ($bUrlPosted, $bSucceed, $aResults) = $this->RetrieveDataFromMS();
+		if (!$bUrlPosted) {
+			Utils::Log(LOG_DEBUG, 'No request have been posted !');
+
+			return false;
+		}
 		if (!$bSucceed) {
 			Utils::Log(LOG_DEBUG, 'Retrieval failed !');
 
