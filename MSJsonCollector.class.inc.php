@@ -327,7 +327,7 @@ class MSJsonCollector extends JsonCollector
 						if (empty($aConcatenatedResults)) {
 							$aConcatenatedResults = $aResults;
 						} else {
-							$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults);
+							$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
 						}
 						// Report list of discovered objects to the collection plan
 						$this->ReportObjects($aResults, $sObjectL1, null, null);
@@ -345,7 +345,7 @@ class MSJsonCollector extends JsonCollector
 							if (empty($aConcatenatedResults)) {
 								$aConcatenatedResults = $aResults;
 							} else {
-								$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults);
+								$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
 							}
 							// Report list of discovered objects to the collection plan
 							$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, null);
@@ -369,7 +369,7 @@ class MSJsonCollector extends JsonCollector
 								if (empty($aConcatenatedResults)) {
 									$aConcatenatedResults = $aResults;
 								} else {
-									$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults);
+									$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
 								}
 								// Report list of discovered resource group to the collection plan
 								$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, $sObjectL3);
@@ -420,13 +420,12 @@ class MSJsonCollector extends JsonCollector
 		list ($bUrlPosted, $bSucceed, $aResults) = $this->RetrieveDataFromMS();
 		if (!$bUrlPosted) {
 			Utils::Log(LOG_DEBUG, 'No request have been posted !');
+		} else {
+			if (!$bSucceed) {
+				Utils::Log(LOG_DEBUG, 'Retrieval failed !');
 
-			return false;
-		}
-		if (!$bSucceed) {
-			Utils::Log(LOG_DEBUG, 'Retrieval failed !');
-
-			return false;
+				return false;
+			}
 		}
 
 		// Store JSON data in file
