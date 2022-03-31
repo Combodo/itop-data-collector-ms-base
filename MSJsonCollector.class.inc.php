@@ -10,8 +10,9 @@ class MSJsonCollector extends JsonCollector
 	const DEFAULT_MICROSOFT_LOGIN_URL = 'https://login.microsoftonline.com/';
 	const DEFAULT_MICROSOFT_AUTH_MODE = '/oauth2/token';
 
-	// Name of URI parameters that can be required
+	// Name of URI parameters that can be used within requests
 	const URI_PARAM_SUBSCRIPTION = 'Subscription';
+	const URI_PARAM_GROUP = 'Group';
 	const URI_PARAM_RESOURCEGROUP = 'ResourceGroup';
 	const URI_PARAM_SERVER = 'Server';
 
@@ -248,7 +249,7 @@ class MSJsonCollector extends JsonCollector
 	 *
 	 * @return void
 	 */
-	protected function ReportObjects($aData, $sObjectL1, $sObjectL2): void
+	protected function ReportObjects($aData, $sObjectL1, $sObjectL2, $sObjectL3): void
 	{
 	}
 
@@ -312,8 +313,8 @@ class MSJsonCollector extends JsonCollector
 				$bUrlPosted = true;
 				if ($bSucceed && !empty($aResults['value'])) {
 					$aConcatenatedResults = $aResults;
-					// Report list of discovered resource group to the collection plan
-					$this->ReportObjects($aResults, 'User', null);
+					// Report list of discovered objects to the collection plan
+					$this->ReportObjects($aResults, null, null, null);
 				}
 				break;
 
@@ -328,8 +329,8 @@ class MSJsonCollector extends JsonCollector
 						} else {
 							$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults);
 						}
-						// Report list of discovered resource group to the collection plan
-						$this->ReportObjects($aResults, $sObjectL1, null);
+						// Report list of discovered objects to the collection plan
+						$this->ReportObjects($aResults, $sObjectL1, null, null);
 					}
 				}
 				break;
@@ -346,8 +347,8 @@ class MSJsonCollector extends JsonCollector
 							} else {
 								$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults);
 							}
-							// Report list of discovered resource group to the collection plan
-							$this->ReportObjects($aResults, $sObjectL1, $sObjectL2);
+							// Report list of discovered objects to the collection plan
+							$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, null);
 						}
 					}
 				}

@@ -2,13 +2,15 @@
 
 class MSCollectionPlan
 {
-	static protected $oMSCollectionPlan;
+	// List of objects that can be used within requests
 	protected $aMSObjectsToConsider = [];
+
+	// Instance of the collection plan
+	static protected $oMSCollectionPlan;
 
 	public function __construct()
 	{
 		self::$oMSCollectionPlan = $this;
-
 	}
 
 	/**
@@ -33,11 +35,11 @@ class MSCollectionPlan
 	}
 
 	/**
-	 * Enrich the list of objects that can be oncsidered during collections
+	 * Enrich the list of objects that can be considered during collections
 	 *
-	 * @param $sObjectL1
-	 * @param $sObjectL2
-	 * @param $sObjectL3
+	 * @param $sObjectL1 : URI_PARAM_SUBSCRIPTION or URI_PARAM_GROUP
+	 * @param $sObjectL2 : URI_PARAM_RESOURCEGROUP
+	 * @param $sObjectL3 : URI_PARAM_SERVER
 	 *
 	 * @return void
 	 */
@@ -61,7 +63,7 @@ class MSCollectionPlan
 	}
 
 	/**
-	 * Provide the list of resource group to consider during the collection
+	 * Provide the list of objects to consider during the collection
 	 *
 	 * @return array|\string[][][]
 	 */
