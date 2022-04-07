@@ -281,7 +281,16 @@ class MSJsonCollector extends JsonCollector
 					"Data collection for ".$this->sMSClass." failed: 
 					                Error code: ".$aResults['error']['code']."
 					                Message: ".$aResults['error']['message']);
+				switch ($aResults['error']['code']) {
+					// Some errors should not stop the collection
+					case 'ResourceNotFound':
+					case 'ParentResourceNotFound':
+						$bSucceed = true;
+						break;
 
+					default:
+						break;
+				}
 			} else {
 				$bSucceed = true;
 				Utils::Log(LOG_DEBUG,
