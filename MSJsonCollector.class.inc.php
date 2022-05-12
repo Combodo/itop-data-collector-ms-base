@@ -249,7 +249,7 @@ class MSJsonCollector extends JsonCollector
 	 *
 	 * @return void
 	 */
-	protected function ReportObjects($aData, $sObjectL1, $sObjectL2, $sObjectL3): void
+	protected function ReportObjects($aData, $sObjectL1, $sObjectL2, $sObjectL3)
 	{
 	}
 
