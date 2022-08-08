@@ -174,6 +174,7 @@ class MSJsonCollector extends JsonCollector
 
 		try {
 			$sResponse = utils::DoPostRequest($sURL, $aData, null, $aEmpty, $aEmpty);
+			Utils::Log(LOG_DEBUG, "Response to authentication request :".$sResponse);
 			$aResults = json_decode($sResponse, true);
 		} catch (Exception $e) {
 			Utils::Log(LOG_ERR, "Authentication failed: ".$e->getMessage());
@@ -181,7 +182,17 @@ class MSJsonCollector extends JsonCollector
 			return false;
 		}
 
+		if (!array_key_exists('access_token', $aResults)) {
+			Utils::Log(LOG_ERR, "Authentication failed: no access_token parameter has been found in Azure response to authentication request.");
+
+			return false;
+		}
 		$this->sBearerToken = $aResults['access_token'];
+		if (!array_key_exists('expires_in', $aResults)) {
+			Utils::Log(LOG_ERR, "Authentication failed: no expiration delay has been found in Azure response to authentication request.");
+
+			return false;
+		}
 		$this->sBearerTokenExpirationDelay = $aResults['expires_in'];
 
 		// Remove token in file
