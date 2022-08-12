@@ -39,7 +39,7 @@ class MSCollectionPlan
 	 *
 	 * @param $sObjectL1 : URI_PARAM_SUBSCRIPTION or URI_PARAM_GROUP
 	 * @param $sObjectL2 : URI_PARAM_RESOURCEGROUP
-	 * @param $sObjectL3 : URI_PARAM_SERVER
+	 * @param $sObjectL3 : URI_PARAM_SERVER ou URI_PARAM_VNET
 	 *
 	 * @return void
 	 */
