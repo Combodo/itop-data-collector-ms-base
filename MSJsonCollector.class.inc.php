@@ -11,10 +11,12 @@ class MSJsonCollector extends JsonCollector
 	const DEFAULT_MICROSOFT_AUTH_MODE = '/oauth2/token';
 
 	// Name of URI parameters that can be used within requests
-	const URI_PARAM_SUBSCRIPTION = 'Subscription';
 	const URI_PARAM_GROUP = 'Group';
+	const URI_PARAM_NETWORKINTERFACE = 'NetworkInterface';
 	const URI_PARAM_RESOURCEGROUP = 'ResourceGroup';
 	const URI_PARAM_SERVER = 'Server';
+	const URI_PARAM_SUBSCRIPTION = 'Subscription';
+	const URI_PARAM_VNET = 'VNet';
 
 	// Parameters of the file where the token is stored
 	const BEARER_TOKEN_FILE_NAME = 'BearerToken.csv';
