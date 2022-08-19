@@ -41,7 +41,7 @@ class MSJsonCollector extends JsonCollector
 	protected static $aURIParameters = [];
 	protected $sJsonFile = '';
 	protected $aFieldsPos = [];
-	protected $oMSCollectionPlan;
+	protected $oCollectionPlan;
 
 	public function __construct()
 	{
@@ -65,7 +65,7 @@ class MSJsonCollector extends JsonCollector
 			$this->sJsonFile = $this->aParamsSourceJson['jsonfile'];
 		}
 
-		$this->oMSCollectionPlan = MSCollectionPlan::GetPlan();
+		$this->oCollectionPlan = MSCollectionPlan::GetPlan();
 	}
 
 	/**
@@ -326,7 +326,7 @@ class MSJsonCollector extends JsonCollector
 	{
 		$bUrlPosted = false;
 		$bSucceed = false;
-		$aObjectsToConsider = $this->oMSCollectionPlan->GetMSObjectsToConsider();
+		$aObjectsToConsider = $this->oCollectionPlan->GetMSObjectsToConsider();
 		$aConcatenatedResults = [];
 		switch (sizeof(static::$aURIParameters)) {
 			case 0:
@@ -341,26 +341,9 @@ class MSJsonCollector extends JsonCollector
 				break;
 
 			case 1:
-				foreach ($aObjectsToConsider as $sObjectL1 => $aObjectL1) {
-					$sUrl = $this->BuildUrl([static::$aURIParameters[1] => $sObjectL1]);
-					list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
-					$bUrlPosted = true;
-					if ($bSucceed && !empty($aResults['value'])) {
-						if (empty($aConcatenatedResults)) {
-							$aConcatenatedResults = $aResults;
-						} else {
-							$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
-						}
-						// Report list of discovered objects to the collection plan
-						$this->ReportObjects($aResults, $sObjectL1, null, null);
-					}
-				}
-				break;
-
-			case 2:
-				foreach ($aObjectsToConsider as $sObjectL1 => $aObjectL1) {
-					foreach ($aObjectL1 as $sObjectL2 => $aObjectL2) {
-						$sUrl = $this->BuildUrl([static::$aURIParameters[1] => $sObjectL1, static::$aURIParameters[2] => $sObjectL2]);
+				if (array_key_exists(static::$aURIParameters[1], $aObjectsToConsider)) {
+					foreach ($aObjectsToConsider[static::$aURIParameters[1]] as $sObjectL1 => $aObjectL1) {
+						$sUrl = $this->BuildUrl([static::$aURIParameters[1] => $sObjectL1]);
 						list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
 						$bUrlPosted = true;
 						if ($bSucceed && !empty($aResults['value'])) {
@@ -370,31 +353,60 @@ class MSJsonCollector extends JsonCollector
 								$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
 							}
 							// Report list of discovered objects to the collection plan
-							$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, null);
+							$this->ReportObjects($aResults, $sObjectL1, null, null);
+						}
+					}
+				}
+				break;
+
+			case 2:
+				if (array_key_exists(static::$aURIParameters[1], $aObjectsToConsider)) {
+					foreach ($aObjectsToConsider[static::$aURIParameters[1]] as $sObjectL1 => $aObjectL1) {
+						if (array_key_exists(static::$aURIParameters[2], $aObjectL1)) {
+							foreach ($aObjectL1[static::$aURIParameters[2]] as $sObjectL2 => $aObjectL2) {
+								$sUrl = $this->BuildUrl([static::$aURIParameters[1] => $sObjectL1, static::$aURIParameters[2] => $sObjectL2]);
+								list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
+								$bUrlPosted = true;
+								if ($bSucceed && !empty($aResults['value'])) {
+									if (empty($aConcatenatedResults)) {
+										$aConcatenatedResults = $aResults;
+									} else {
+										$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
+									}
+									// Report list of discovered objects to the collection plan
+									$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, null);
+								}
+							}
 						}
 					}
 				}
 				break;
 
 			case 3:
-				foreach ($aObjectsToConsider as $sObjectL1 => $aObjectL1) {
-					foreach ($aObjectL1 as $sObjectL2 => $aObjectL2) {
-						foreach ($aObjectL2 as $sObjectL3 => $aObjectL3) {
-							$sUrl = $this->BuildUrl([
-								static::$aURIParameters[1] => $sObjectL1,
-								static::$aURIParameters[2] => $sObjectL2,
-								static::$aURIParameters[3] => $sObjectL3,
-							]);
-							list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
-							$bUrlPosted = true;
-							if ($bSucceed && !empty($aResults['value'])) {
-								if (empty($aConcatenatedResults)) {
-									$aConcatenatedResults = $aResults;
-								} else {
-									$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
+				if (array_key_exists(static::$aURIParameters[1], $aObjectsToConsider)) {
+					foreach ($aObjectsToConsider[static::$aURIParameters[1]] as $sObjectL1 => $aObjectL1) {
+						if (array_key_exists(static::$aURIParameters[2], $aObjectL1)) {
+							foreach ($aObjectL1[static::$aURIParameters[2]] as $sObjectL2 => $aObjectL2) {
+								if (array_key_exists(static::$aURIParameters[3], $aObjectL2)) {
+									foreach ($aObjectL2[static::$aURIParameters[3]] as $sObjectL3 => $aObjectL3) {
+										$sUrl = $this->BuildUrl([
+											static::$aURIParameters[1] => $sObjectL1,
+											static::$aURIParameters[2] => $sObjectL2,
+											static::$aURIParameters[3] => $sObjectL3,
+										]);
+										list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
+										$bUrlPosted = true;
+										if ($bSucceed && !empty($aResults['value'])) {
+											if (empty($aConcatenatedResults)) {
+												$aConcatenatedResults = $aResults;
+											} else {
+												$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
+											}
+											// Report list of discovered resource group to the collection plan
+											$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, $sObjectL3);
+										}
+									}
 								}
-								// Report list of discovered resource group to the collection plan
-								$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, $sObjectL3);
 							}
 						}
 					}
@@ -414,7 +426,8 @@ class MSJsonCollector extends JsonCollector
 	 *
 	 * @see jsonCollector::Prepare()
 	 */
-	public function Prepare(): bool
+	public
+	function Prepare(): bool
 	{
 		// Check MS class is set
 		if ($this->sMSClass == '') {
@@ -470,7 +483,8 @@ class MSJsonCollector extends JsonCollector
 	/**
 	 * @inheritdoc
 	 */
-	public function Collect($iMaxChunkSize = 0): bool
+	public
+	function Collect($iMaxChunkSize = 0): bool
 	{
 		Utils::Log(LOG_INFO, '----------------');
 
@@ -483,7 +497,8 @@ class MSJsonCollector extends JsonCollector
 	 * @param array $aLineHeaders An array of strings (the "headers" i.e. first line of the CSV file)
 	 * @param array $aFields The fields for which a mapping is requested, as an array of strings
 	 */
-	protected function InitLineMappings($aLineHeaders, $aFields)
+	protected
+	function InitLineMappings($aLineHeaders, $aFields)
 	{
 		foreach ($aLineHeaders as $idx => $sHeader) {
 			if (in_array($sHeader, $aFields)) {
@@ -507,7 +522,8 @@ class MSJsonCollector extends JsonCollector
 	 *
 	 * @return array
 	 */
-	protected function DoLookup($aLookupKey, $sDestField): array
+	protected
+	function DoLookup($aLookupKey, $sDestField): array
 	{
 		return [false, ''];
 	}
@@ -524,7 +540,8 @@ class MSJsonCollector extends JsonCollector
 	 * @return bool
 	 * @throws \Exception
 	 */
-	protected function Lookup(&$aLineData, $aLookupFields, $sDestField, $iLineIndex, $bIgnoreMappingErrors): bool
+	protected
+	function Lookup(&$aLineData, $aLookupFields, $sDestField, $iLineIndex, $bIgnoreMappingErrors): bool
 	{
 		$bRet = true;
 		if ($iLineIndex == 0) {
