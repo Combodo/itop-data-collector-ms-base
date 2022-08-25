@@ -12,6 +12,7 @@ class MSJsonCollector extends JsonCollector
 
 	// Name of URI parameters that can be used within requests
 	const URI_PARAM_GROUP = 'Group';
+	const URI_PARAM_LOADBALANCER = 'LoadBalancer';
 	const URI_PARAM_NETWORKINTERFACE = 'NetworkInterface';
 	const URI_PARAM_RESOURCEGROUP = 'ResourceGroup';
 	const URI_PARAM_SERVER = 'Server';
@@ -41,7 +42,7 @@ class MSJsonCollector extends JsonCollector
 	protected static $aURIParameters = [];
 	protected $sJsonFile = '';
 	protected $aFieldsPos = [];
-	protected $oCollectionPlan;
+	protected $oMSCollectionPlan;
 
 	public function __construct()
 	{
@@ -65,7 +66,7 @@ class MSJsonCollector extends JsonCollector
 			$this->sJsonFile = $this->aParamsSourceJson['jsonfile'];
 		}
 
-		$this->oCollectionPlan = MSCollectionPlan::GetPlan();
+		$this->oMSCollectionPlan = MSCollectionPlan::GetPlan();
 	}
 
 	/**
@@ -234,8 +235,10 @@ class MSJsonCollector extends JsonCollector
 	 */
 	public static function NeedsResourceGroupsForCollector(): bool
 	{
-		if (array_key_exists(2, static::$aURIParameters)) {
-			return true;
+		foreach (static::$aURIParameters as $index => $sParameter) {
+			if ($sParameter == self::URI_PARAM_RESOURCEGROUP) {
+				return true;
+			}
 		}
 
 		return false;
@@ -326,7 +329,7 @@ class MSJsonCollector extends JsonCollector
 	{
 		$bUrlPosted = false;
 		$bSucceed = false;
-		$aObjectsToConsider = $this->oCollectionPlan->GetMSObjectsToConsider();
+		$aObjectsToConsider = $this->oMSCollectionPlan->GetMSObjectsToConsider();
 		$aConcatenatedResults = [];
 		switch (sizeof(static::$aURIParameters)) {
 			case 0:
