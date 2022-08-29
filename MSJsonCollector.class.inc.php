@@ -15,7 +15,10 @@ class MSJsonCollector extends JsonCollector
 	const URI_PARAM_LOADBALANCER = 'LoadBalancer';
 	const URI_PARAM_NETWORKINTERFACE = 'NetworkInterface';
 	const URI_PARAM_RESOURCEGROUP = 'ResourceGroup';
-	const URI_PARAM_SERVER = 'Server';
+	const URI_PARAM_MARIADB_SERVER = 'MariaDBServer';
+	const URI_PARAM_MSSQL_SERVER = 'MSSQLServer';
+	const URI_PARAM_MySQL_SERVER = 'MySQLServer';
+	const URI_PARAM_POSTGRE_SERVER = 'PostgreServer';
 	const URI_PARAM_SUBSCRIPTION = 'Subscription';
 	const URI_PARAM_VNET = 'VNet';
 
@@ -229,22 +232,6 @@ class MSJsonCollector extends JsonCollector
 	}
 
 	/**
-	 * Tells if resource groups are necessary to collect the class
-	 *
-	 * @return bool
-	 */
-	public static function NeedsResourceGroupsForCollector(): bool
-	{
-		foreach (static::$aURIParameters as $index => $sParameter) {
-			if ($sParameter == self::URI_PARAM_RESOURCEGROUP) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 *  Build the URL used to collect the requested class
 	 *
 	 * @param $aParameters
@@ -424,13 +411,22 @@ class MSJsonCollector extends JsonCollector
 	}
 
 	/**
+	 * Get list of parameters required for the collection query
+	 *
+	 * @return bool
+	 */
+	public function GetURIParameters(): array
+	{
+		return static::$aURIParameters;
+	}
+
+	/**
 	 * Runs the configured query to start fetching the data from the database
 	 * Store result in json data file
 	 *
 	 * @see jsonCollector::Prepare()
 	 */
-	public
-	function Prepare(): bool
+	public function Prepare(): bool
 	{
 		// Check MS class is set
 		if ($this->sMSClass == '') {
@@ -486,8 +482,7 @@ class MSJsonCollector extends JsonCollector
 	/**
 	 * @inheritdoc
 	 */
-	public
-	function Collect($iMaxChunkSize = 0): bool
+	public function Collect($iMaxChunkSize = 0): bool
 	{
 		Utils::Log(LOG_INFO, '----------------');
 
@@ -500,8 +495,7 @@ class MSJsonCollector extends JsonCollector
 	 * @param array $aLineHeaders An array of strings (the "headers" i.e. first line of the CSV file)
 	 * @param array $aFields The fields for which a mapping is requested, as an array of strings
 	 */
-	protected
-	function InitLineMappings($aLineHeaders, $aFields)
+	protected function InitLineMappings($aLineHeaders, $aFields)
 	{
 		foreach ($aLineHeaders as $idx => $sHeader) {
 			if (in_array($sHeader, $aFields)) {
@@ -525,8 +519,7 @@ class MSJsonCollector extends JsonCollector
 	 *
 	 * @return array
 	 */
-	protected
-	function DoLookup($aLookupKey, $sDestField): array
+	protected function DoLookup($aLookupKey, $sDestField): array
 	{
 		return [false, ''];
 	}
@@ -543,8 +536,7 @@ class MSJsonCollector extends JsonCollector
 	 * @return bool
 	 * @throws \Exception
 	 */
-	protected
-	function Lookup(&$aLineData, $aLookupFields, $sDestField, $iLineIndex, $bIgnoreMappingErrors): bool
+	protected function Lookup(&$aLineData, $aLookupFields, $sDestField, $iLineIndex, $bIgnoreMappingErrors): bool
 	{
 		$bRet = true;
 		if ($iLineIndex == 0) {
@@ -580,6 +572,4 @@ class MSJsonCollector extends JsonCollector
 
 		return $bRet;
 	}
-
-
 }
