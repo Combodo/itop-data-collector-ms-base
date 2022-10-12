@@ -318,7 +318,7 @@ class MSJsonCollector extends JsonCollector
 		$bSucceed = false;
 		$aObjectsToConsider = $this->oMSCollectionPlan->GetMSObjectsToConsider();
 		$aConcatenatedResults = [];
-		switch (sizeof(static::$aURIParameters)) {
+		switch (count(static::$aURIParameters)) {
 			case 0:
 				$sUrl = $this->BuildUrl([]);
 				list($bSucceed, $aResults) = $this->Post($sUrl);
