@@ -1,38 +1,9 @@
 <?php
 
-class MSCollectionPlan
+abstract class MSCollectionPlan extends CollectionPlan
 {
 	// List of objects that can be used within requests
 	protected $aMSObjectsToConsider = [];
-
-	// Instance of the collection plan
-	static protected $oMSCollectionPlan;
-
-	public function __construct()
-	{
-		self::$oMSCollectionPlan = $this;
-	}
-
-	/**
-	 * @return \MSCollectionPlan
-	 */
-	public static function GetPlan()
-	{
-		return self::$oMSCollectionPlan;
-	}
-
-	/**
-	 * Tells if a collector needs to be orchestrated or not
-	 *
-	 * @param $sCollectorClass
-	 *
-	 * @return bool
-	 * @throws \Exception
-	 */
-	public function CollectorToBeLaunched($sCollectorClass): bool
-	{
-		return true;
-	}
 
 	/**
 	 * Enrich the list of objects that can be considered during collections
