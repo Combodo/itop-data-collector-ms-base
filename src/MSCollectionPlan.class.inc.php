@@ -68,7 +68,7 @@ abstract class MSCollectionPlan extends CollectionPlan
 	 *
 	 * @return bool
 	 */
-	protected function IsSubscriptionToConsider(): bool
+	public function IsSubscriptionToConsider(): bool
 	{
 		if (array_key_exists(MSJsonCollector::URI_PARAM_SUBSCRIPTION, $this->aMSObjectsToConsider) && !empty($this->aMSObjectsToConsider[MSJsonCollector::URI_PARAM_SUBSCRIPTION])) {
 			return true;
@@ -82,7 +82,7 @@ abstract class MSCollectionPlan extends CollectionPlan
 	 *
 	 * @return bool
 	 */
-	protected function IsResourceGroupToConsider(): bool
+	public function IsResourceGroupToConsider(): bool
 	{
 		if ($this->IsSubscriptionToConsider()) {
 			$aSubscriptions = $this->aMSObjectsToConsider[MSJsonCollector::URI_PARAM_SUBSCRIPTION];
