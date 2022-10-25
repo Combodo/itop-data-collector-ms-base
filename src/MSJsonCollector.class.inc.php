@@ -86,50 +86,45 @@ class MSJsonCollector extends JsonCollector
 	/**
 	 * @inheritdoc
 	 */
-	public function IsToBeLaunched(): bool
+	public function CheckToLaunch(): bool
 	{
 		$sMyClassName = get_class($this);
-		$aCollectorParams = Utils::GetConfigurationValue(strtolower($sMyClassName), []);
-		if (!empty($aCollectorParams) && isset($aCollectorParams['enable']) && ($aCollectorParams['enable'] == 'yes')) {
-			$aURIParameters = $this->GetURIParameters();
-			foreach ($aURIParameters as $index => $sParameter) {
-				switch ($sParameter) {
-					case MSJsonCollector::URI_PARAM_SUBSCRIPTION:
-						if (!$this->oMSCollectionPlan->IsSubscriptionToConsider()) {
-							// All Azure objects being attached to a subscription, their discovery is only possible in the case where there is at least one subscription to discover.
-							Utils::Log(LOG_INFO, $sMyClassName.' will NOT be launched as no subscription should be discovered');
+		$aURIParameters = $this->GetURIParameters();
+		foreach ($aURIParameters as $index => $sParameter) {
+			switch ($sParameter) {
+				case MSJsonCollector::URI_PARAM_SUBSCRIPTION:
+					if (!$this->oMSCollectionPlan->IsSubscriptionToConsider()) {
+						// All Azure objects being attached to a subscription, their discovery is only possible in the case where there is at least one subscription to discover.
+						Utils::Log(LOG_INFO, '> '.$sMyClassName.' cannot be launched as required subscriptions will not be discovered');
+
+						return false;
+					}
+					break;
+
+				case MSJsonCollector::URI_PARAM_RESOURCEGROUP:
+					if (!$this->oMSCollectionPlan->IsResourceGroupToConsider()) {
+						// If no resource group is already identified, let's check that discovery of resource group is enable.
+						$aParamsResourceGroupJson = Utils::GetConfigurationValue(strtolower('AzureResourceGroupAzureCollector'), []);
+						if (!isset($aParamsResourceGroupJson['enable']) || ($aParamsResourceGroupJson['enable'] != 'yes')) {
+							Utils::Log(LOG_INFO, '> '.$sMyClassName.' cannot be launched as required resource group will not be discovered');
 
 							return false;
 						}
-						break;
+					}
+					break;
 
-					case MSJsonCollector::URI_PARAM_RESOURCEGROUP:
-						if (!$this->oMSCollectionPlan->IsResourceGroupToConsider()) {
-							// If no resource group is already identified, let's check that discovery of resource group is enable.
-							$aParamsResourceGroupJson = Utils::GetConfigurationValue(strtolower('AzureResourceGroupAzureCollector'), []);
-							if (!isset($aParamsResourceGroupJson['enable']) || ($aParamsResourceGroupJson['enable'] != 'yes')) {
-								Utils::Log(LOG_INFO, $sMyClassName.' will NOT be launched as no resource group should be discovered');
+				default:
+					$aParamsParamClassJson = Utils::GetConfigurationValue(strtolower('Azure'.$sParameter.'AzureCollector'), []);
+					if (!isset($aParamsParamClassJson['enable']) || ($aParamsParamClassJson['enable'] != 'yes')) {
+						Utils::Log(LOG_INFO, '> '.$sMyClassName.' cannot be launched as required '.$sParameter.' will not be discovered');
 
-								return false;
-							}
-						}
-						break;
-
-					default:
-						$aParamsParamClassJson = Utils::GetConfigurationValue(strtolower('Azure'.$sParameter.'AzureCollector'), []);
-						if (!isset($aParamsParamClassJson['enable']) || ($aParamsParamClassJson['enable'] != 'yes')) {
-							Utils::Log(LOG_INFO, $sMyClassName.' will not be launched as no '.$sParameter.' should be discovered');
-
-							return false;
-						}
-						break;
-				}
+						return false;
+					}
+					break;
 			}
-
-			return true;
 		}
 
-		return false;
+		return true;
 	}
 
 	/**
