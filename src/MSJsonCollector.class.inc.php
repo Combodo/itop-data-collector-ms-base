@@ -11,23 +11,23 @@ class MSJsonCollector extends JsonCollector
 	const DEFAULT_MICROSOFT_AUTH_MODE = '/oauth2/token';
 
 	// Name of URI parameters that can be used within requests
-	const URI_PARAM_GROUP = 'Group';
-	const URI_PARAM_LOADBALANCER = 'LoadBalancer';
+	const URI_PARAM_GROUP            = 'Group';
+	const URI_PARAM_LOADBALANCER     = 'LoadBalancer';
 	const URI_PARAM_NETWORKINTERFACE = 'NetworkInterface';
-	const URI_PARAM_RESOURCEGROUP = 'ResourceGroup';
-	const URI_PARAM_MARIADB_SERVER = 'MariaDBServer';
-	const URI_PARAM_MSSQL_SERVER = 'MSSQLServer';
-	const URI_PARAM_MySQL_SERVER = 'MySQLServer';
-	const URI_PARAM_POSTGRE_SERVER = 'PostgreServer';
-	const URI_PARAM_SUBSCRIPTION = 'Subscription';
-	const URI_PARAM_VNET = 'VNet';
+	const URI_PARAM_RESOURCEGROUP    = 'ResourceGroup';
+	const URI_PARAM_MARIADB_SERVER   = 'MariaDBServer';
+	const URI_PARAM_MSSQL_SERVER     = 'MSSQLServer';
+	const URI_PARAM_MySQL_SERVER     = 'MySQLServer';
+	const URI_PARAM_POSTGRE_SERVER   = 'PostgreServer';
+	const URI_PARAM_SUBSCRIPTION     = 'Subscription';
+	const URI_PARAM_VNET             = 'VNet';
 
 	// Parameters of the file where the token is stored
-	const BEARER_TOKEN_FILE_NAME = 'BearerToken.csv';
-	const BEARER_TOKEN_NAME = 'TokenName';
-	const BEARER_TOKEN_REQUEST_TIME = 'TokenRequestTime';
+	const BEARER_TOKEN_FILE_NAME             = 'BearerToken.csv';
+	const BEARER_TOKEN_NAME                  = 'TokenName';
+	const BEARER_TOKEN_REQUEST_TIME          = 'TokenRequestTime';
 	const BEARER_TOKEN_EXPIRATION_DELAY_NAME = 'TokenExpirationDelay';
-	const BEARER_EXPIRATION_GRACE_PERIOD = 5;
+	const BEARER_EXPIRATION_GRACE_PERIOD     = 5;
 
 	private $sLoginUrl;
 	private $sAuthMode;
@@ -86,11 +86,12 @@ class MSJsonCollector extends JsonCollector
 	/**
 	 * @inheritdoc
 	 */
-	public function CheckToLaunch(): bool
+	public function CheckToLaunch($aOrchestratedCollectors): bool
 	{
 		$sMyClassName = get_class($this);
 		$aURIParameters = $this->GetURIParameters();
 		foreach ($aURIParameters as $index => $sParameter) {
+			$sParameterClass = 'Azure'.$sParameter.'AzureCollector';
 			switch ($sParameter) {
 				case MSJsonCollector::URI_PARAM_SUBSCRIPTION:
 					if (!$this->oMSCollectionPlan->IsSubscriptionToConsider()) {
@@ -104,8 +105,8 @@ class MSJsonCollector extends JsonCollector
 				case MSJsonCollector::URI_PARAM_RESOURCEGROUP:
 					if (!$this->oMSCollectionPlan->IsResourceGroupToConsider()) {
 						// If no resource group is already identified, let's check that discovery of resource group is enable.
-						$aParamsResourceGroupJson = Utils::GetConfigurationValue(strtolower('AzureResourceGroupAzureCollector'), []);
-						if (!isset($aParamsResourceGroupJson['enable']) || ($aParamsResourceGroupJson['enable'] != 'yes')) {
+						if (!array_key_exists($sParameterClass, $aOrchestratedCollectors) ||
+							($aOrchestratedCollectors[$sParameterClass] == false)) {
 							Utils::Log(LOG_INFO, '> '.$sMyClassName.' cannot be launched as required resource group will not be discovered');
 
 							return false;
@@ -114,8 +115,8 @@ class MSJsonCollector extends JsonCollector
 					break;
 
 				default:
-					$aParamsParamClassJson = Utils::GetConfigurationValue(strtolower('Azure'.$sParameter.'AzureCollector'), []);
-					if (!isset($aParamsParamClassJson['enable']) || ($aParamsParamClassJson['enable'] != 'yes')) {
+					if (!array_key_exists($sParameterClass, $aOrchestratedCollectors) ||
+						($aOrchestratedCollectors[$sParameterClass] == false)) {
 						Utils::Log(LOG_INFO, '> '.$sMyClassName.' cannot be launched as required '.$sParameter.' will not be discovered');
 
 						return false;
@@ -226,10 +227,10 @@ class MSJsonCollector extends JsonCollector
 
 		$sURL = $this->sLoginUrl.$this->sTenantId.$this->sAuthMode;
 		$aData = [
-			'grant_type' => "client_credentials",
-			'client_id' => $this->sClientId,
+			'grant_type'    => "client_credentials",
+			'client_id'     => $this->sClientId,
 			'client_secret' => $this->sClientSecret,
-			'resource' => $this->sResource,
+			'resource'      => $this->sResource,
 		];
 		$aEmpty = [];
 
@@ -527,6 +528,7 @@ class MSJsonCollector extends JsonCollector
 		}
 		if (empty($aResults)) {
 			Utils::Log(LOG_INFO, "Result of collect is empty !");
+			$this->RemoveDataFiles();
 
 			return true;    // It is important to return true here as the synchro should proceed even if no object have been retrieved.
 		}
