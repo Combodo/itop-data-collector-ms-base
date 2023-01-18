@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Base class for MS collectors
+ * Base class for MS JSON collectors
  *
  */
-class MSJsonCollector extends JsonCollector
+abstract class MSJsonCollector extends JsonCollector
 {
 	// Defaults to handle the authentication query
 	const DEFAULT_MICROSOFT_LOGIN_URL = 'https://login.microsoftonline.com/';
