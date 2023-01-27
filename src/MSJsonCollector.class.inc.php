@@ -629,4 +629,29 @@ abstract class MSJsonCollector extends JsonCollector
 
 		return $bRet;
 	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function Fetch()
+	{
+		$aData = parent::Fetch();
+		if ($aData !== false) {
+			// Then process specific data
+			$iJsonIdx = $this->iIdx - 1; // Increment is done at the end of parent::Fetch()
+
+			// Get the TAGs, a common attribute to most Azure classes
+			$sTags = '';
+			if (array_key_exists('tags', $this->aJson[$this->aJsonKey[$iJsonIdx]])) {
+				$aTags = $this->aJson[$this->aJsonKey[$iJsonIdx]]['tags'];
+				foreach ($aTags as $sKey => $sValue) {
+					$sTags .= $sKey.' : '.$sValue."\n";
+				}
+			}
+			$aData['azuretags'] = $sTags;
+		}
+
+		return $aData;
+	}
+
 }
