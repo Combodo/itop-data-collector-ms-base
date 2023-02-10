@@ -11,23 +11,25 @@ abstract class MSJsonCollector extends JsonCollector
 	const DEFAULT_MICROSOFT_AUTH_MODE = '/oauth2/token';
 
 	// Name of URI parameters that can be used within requests
-	const URI_PARAM_GROUP            = 'Group';
-	const URI_PARAM_LOADBALANCER     = 'LoadBalancer';
+	const URI_PARAM_GROUP = 'Group';
+	const URI_PARAM_LOADBALANCER = 'LoadBalancer';
 	const URI_PARAM_NETWORKINTERFACE = 'NetworkInterface';
-	const URI_PARAM_RESOURCEGROUP    = 'ResourceGroup';
-	const URI_PARAM_MARIADB_SERVER   = 'MariaDBServer';
-	const URI_PARAM_MSSQL_SERVER     = 'MSSQLServer';
-	const URI_PARAM_MySQL_SERVER     = 'MySQLServer';
-	const URI_PARAM_POSTGRE_SERVER   = 'PostgreServer';
-	const URI_PARAM_SUBSCRIPTION     = 'Subscription';
-	const URI_PARAM_VNET             = 'VNet';
+	const URI_PARAM_RESOURCEGROUP = 'ResourceGroup';
+	const URI_PARAM_MARIADB_SERVER = 'MariaDBServer';
+	const URI_PARAM_MSSQL_SERVER = 'MSSQLServer';
+	const URI_PARAM_MySQL_SERVER = 'MySQLServer';
+	const URI_PARAM_POSTGRE_SERVER = 'PostgreServer';
+	const URI_PARAM_SUBSCRIPTION = 'Subscription';
+	const URI_PARAM_VNET = 'VNet';
 
 	// Parameters of the file where the token is stored
-	const BEARER_TOKEN_FILE_NAME             = 'BearerToken.csv';
-	const BEARER_TOKEN_NAME                  = 'TokenName';
-	const BEARER_TOKEN_REQUEST_TIME          = 'TokenRequestTime';
+	const BEARER_TOKEN_FILE_NAME = 'BearerToken.csv';
+	const BEARER_TOKEN_NAME = 'TokenName';
+	const BEARER_TOKEN_REQUEST_TIME = 'TokenRequestTime';
 	const BEARER_TOKEN_EXPIRATION_DELAY_NAME = 'TokenExpirationDelay';
-	const BEARER_EXPIRATION_GRACE_PERIOD     = 5;
+	const BEARER_EXPIRATION_GRACE_PERIOD = 5;
+
+	const PRIMARY_KEY_MAX_LENGTH = 255;
 
 	private $sLoginUrl;
 	private $sAuthMode;
@@ -637,6 +639,9 @@ abstract class MSJsonCollector extends JsonCollector
 	{
 		$aData = parent::Fetch();
 		if ($aData !== false) {
+			// Make sure primary_key is not too long
+			$aData['primary_key'] = substr($aData['primary_key'], -self::PRIMARY_KEY_MAX_LENGTH);
+
 			// Then process specific data
 			$iJsonIdx = $this->iIdx - 1; // Increment is done at the end of parent::Fetch()
 
