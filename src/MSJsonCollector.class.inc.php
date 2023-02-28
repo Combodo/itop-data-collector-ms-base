@@ -635,6 +635,16 @@ abstract class MSJsonCollector extends JsonCollector
 	/**
 	 * @inheritdoc
 	 */
+	public function Synchronize($iMaxChunkSize = 0)
+	{
+		Utils::Log(LOG_INFO, '----------------');
+
+		return parent::Synchronize($iMaxChunkSize);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function Fetch()
 	{
 		$aData = parent::Fetch();
