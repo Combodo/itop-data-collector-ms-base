@@ -189,4 +189,14 @@ abstract class MSCsvCollector extends CSVCollector
 		return parent::Collect($iMaxChunkSize);
 	}
 
+	/**
+	 * @inheritdoc
+	 */
+	public function Synchronize($iMaxChunkSize = 0): bool
+	{
+		Utils::Log(LOG_INFO, '----------------');
+
+		return parent::Synchronize($iMaxChunkSize);
+	}
+
 }

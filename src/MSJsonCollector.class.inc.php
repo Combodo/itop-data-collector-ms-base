@@ -635,7 +635,7 @@ abstract class MSJsonCollector extends JsonCollector
 	/**
 	 * @inheritdoc
 	 */
-	public function Synchronize($iMaxChunkSize = 0)
+	public function Synchronize($iMaxChunkSize = 0): bool
 	{
 		Utils::Log(LOG_INFO, '----------------');
 
