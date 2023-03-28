@@ -354,8 +354,8 @@ abstract class MSJsonCollector extends JsonCollector
 				}
 			} else {
 				$bSucceed = true;
-				Utils::Log(LOG_DEBUG,
-					'Data for class '.$this->sMSClass.' have been retrieved from MS environment '.$iSubscription.'. Count Total = '.count($aResults['value']));
+				$iCount = isset($aResults['value']) ? count($aResults['value']) : 0;
+				Utils::Log(LOG_DEBUG, 'Data for class '.$this->sMSClass.' have been retrieved from MS environment '.$iSubscription.'. Count Total = '.$iCount);
 			}
 		} catch (Exception $e) {
 			Utils::Log(LOG_WARNING, "Resource group query failed for subscription '.$iSubscription.': ".$e->getMessage());
