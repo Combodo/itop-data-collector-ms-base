@@ -12,6 +12,7 @@ abstract class MSJsonCollector extends JsonCollector
 
 	// Name of URI parameters that can be used within requests
 	const URI_PARAM_GROUP = 'Group';
+	const URI_PARAM_USER = 'User';
 	const URI_PARAM_LOADBALANCER = 'LoadBalancer';
 	const URI_PARAM_NETWORKINTERFACE = 'NetworkInterface';
 	const URI_PARAM_RESOURCEGROUP = 'ResourceGroup';
@@ -437,7 +438,13 @@ abstract class MSJsonCollector extends JsonCollector
 						list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
 						$bUrlPosted = true;
 						if ($bSucceed && !empty($aResults['value'])) {
-							$aCompletedResult = $this->CompleteDataFromMS($aResults, [static::$aURIParameters[1] => $sObjectL1]);
+							$aParameters = [
+								static::$aURIParameters[1] => [
+									'id' => $sObjectL1,
+									'params' => $aObjectL1
+								]
+							];
+							$aCompletedResult = $this->CompleteDataFromMS($aResults, $aParameters);
 							if (empty($aConcatenatedResults)) {
 								$aConcatenatedResults = $aCompletedResult;
 							} else {
@@ -459,7 +466,17 @@ abstract class MSJsonCollector extends JsonCollector
 								list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
 								$bUrlPosted = true;
 								if ($bSucceed && !empty($aResults['value'])) {
-									$aCompletedResult = $this->CompleteDataFromMS($aResults, [static::$aURIParameters[1] => $sObjectL1, static::$aURIParameters[2] => $sObjectL2]);
+									$aParameters = [
+										static::$aURIParameters[1] => [
+											'id' => $sObjectL1,
+											'params' => $aObjectL1
+										],
+										static::$aURIParameters[2] => [
+											'id' => $sObjectL2,
+											'params' => $aObjectL2
+										]
+									];
+									$aCompletedResult = $this->CompleteDataFromMS($aResults, $aParameters);
 									if (empty($aConcatenatedResults)) {
 										$aConcatenatedResults = $aCompletedResult;
 									} else {
@@ -489,11 +506,21 @@ abstract class MSJsonCollector extends JsonCollector
 										list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
 										$bUrlPosted = true;
 										if ($bSucceed && !empty($aResults['value'])) {
-											$aCompletedResult = $this->CompleteDataFromMS($aResults, [
-												static::$aURIParameters[1] => $sObjectL1,
-												static::$aURIParameters[2] => $sObjectL2,
-												static::$aURIParameters[3] => $sObjectL3,
-												]);
+											$aParameters = [
+												static::$aURIParameters[1] => [
+													'id' => $sObjectL1,
+													'params' => $aObjectL1
+												],
+												static::$aURIParameters[2] => [
+													'id' => $sObjectL2,
+													'params' => $aObjectL2
+												],
+												static::$aURIParameters[3] => [
+													'id' => $sObjectL3,
+													'params' => $aObjectL3
+												]
+											];
+											$aCompletedResult = $this->CompleteDataFromMS($aResults, $aParameters);
 											if (empty($aConcatenatedResults)) {
 												$aConcatenatedResults = $aCompletedResult;
 											} else {

@@ -25,6 +25,12 @@ abstract class MSCollectionPlan extends CollectionPlan
 			} elseif (!array_key_exists($aObjL1['id'], $this->aMSObjectsToConsider[$aObjL1['class']])) {
 				$this->aMSObjectsToConsider[$aObjL1['class']][$aObjL1['id']] = [];
 			}
+			// Store additional parameters of ObjL1, if any
+			foreach ($aObjL1 as $key => $value) {
+				if (($key != 'class') && ($key != 'id')) {
+					$this->aMSObjectsToConsider[$aObjL1['class']][$aObjL1['id']][$key] = $value;
+				}
+			}
 
 			// Next process 2nd level if required
 			if (!empty($aObjL2)) {
