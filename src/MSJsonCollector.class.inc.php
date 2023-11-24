@@ -86,6 +86,37 @@ abstract class MSJsonCollector extends JsonCollector
 	}
 
 	/**
+	 * Build the name of a collector based on class to collect
+	 * This relies on a convention where such name is supose to look like:
+	 *     . AzureClassAzureCollector
+	 *     . AzureClassGraphCollector
+	 *     . Other defined by an overload method
+	 *
+	 * @param $sParameter
+	 * @return string
+	 */
+	protected function GetCollectorClassFromURIParameter($sParameter) : string
+	{
+		$sMyClassName = get_class($this);
+		if (strstr($sMyClassName, 'AzureCollector')) {
+			return 'Azure'.$sParameter.'AzureCollector';
+		} elseif (strstr($sMyClassName,  'GraphCollector')) {
+			return 'Azure'.$sParameter.'GraphCollector';
+		}
+		return '';
+	}
+
+	/**
+	 * Get list of parameters required for the collection query
+	 *
+	 * @return bool
+	 */
+	public function GetURIParameters(): array
+	{
+		return static::$aURIParameters;
+	}
+
+	/**
 	 * @inheritdoc
 	 */
 	public function CheckToLaunch($aOrchestratedCollectors): bool
@@ -93,7 +124,7 @@ abstract class MSJsonCollector extends JsonCollector
 		$sMyClassName = get_class($this);
 		$aURIParameters = $this->GetURIParameters();
 		foreach ($aURIParameters as $index => $sParameter) {
-			$sParameterClass = 'Azure'.$sParameter.'AzureCollector';
+			$sParameterClass = $this->GetCollectorClassFromURIParameter($sParameter);
 			switch ($sParameter) {
 				case MSJsonCollector::URI_PARAM_SUBSCRIPTION:
 					if (!$this->oMSCollectionPlan->IsSubscriptionToConsider()) {
@@ -366,6 +397,17 @@ abstract class MSJsonCollector extends JsonCollector
 	}
 
 	/**
+	 * Complete data received from Microsoft if required
+	 *
+	 * @param $aResults
+	 * @return array
+	 */
+	protected function CompleteDataFromMS($aResults, $aParameters): array
+	{
+		return $aResults;
+	}
+
+	/**
 	 *  Retrieve data from MS for the class that implements the method and store them in given file
 	 *
 	 * @return bool
@@ -395,13 +437,14 @@ abstract class MSJsonCollector extends JsonCollector
 						list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
 						$bUrlPosted = true;
 						if ($bSucceed && !empty($aResults['value'])) {
+							$aCompletedResult = $this->CompleteDataFromMS($aResults, [static::$aURIParameters[1] => $sObjectL1]);
 							if (empty($aConcatenatedResults)) {
-								$aConcatenatedResults = $aResults;
+								$aConcatenatedResults = $aCompletedResult;
 							} else {
-								$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
+								$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aCompletedResult['value']);
 							}
 							// Report list of discovered objects to the collection plan
-							$this->ReportObjects($aResults, $sObjectL1, null, null);
+							$this->ReportObjects($aCompletedResult, $sObjectL1, null, null);
 						}
 					}
 				}
@@ -416,13 +459,14 @@ abstract class MSJsonCollector extends JsonCollector
 								list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
 								$bUrlPosted = true;
 								if ($bSucceed && !empty($aResults['value'])) {
+									$aCompletedResult = $this->CompleteDataFromMS($aResults, [static::$aURIParameters[1] => $sObjectL1, static::$aURIParameters[2] => $sObjectL2]);
 									if (empty($aConcatenatedResults)) {
-										$aConcatenatedResults = $aResults;
+										$aConcatenatedResults = $aCompletedResult;
 									} else {
-										$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
+										$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aCompletedResult['value']);
 									}
 									// Report list of discovered objects to the collection plan
-									$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, null);
+									$this->ReportObjects($aCompletedResult, $sObjectL1, $sObjectL2, null);
 								}
 							}
 						}
@@ -441,17 +485,22 @@ abstract class MSJsonCollector extends JsonCollector
 											static::$aURIParameters[1] => $sObjectL1,
 											static::$aURIParameters[2] => $sObjectL2,
 											static::$aURIParameters[3] => $sObjectL3,
-										]);
+											]);
 										list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
 										$bUrlPosted = true;
 										if ($bSucceed && !empty($aResults['value'])) {
+											$aCompletedResult = $this->CompleteDataFromMS($aResults, [
+												static::$aURIParameters[1] => $sObjectL1,
+												static::$aURIParameters[2] => $sObjectL2,
+												static::$aURIParameters[3] => $sObjectL3,
+												]);
 											if (empty($aConcatenatedResults)) {
-												$aConcatenatedResults = $aResults;
+												$aConcatenatedResults = $aCompletedResult;
 											} else {
-												$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aResults['value']);
+												$aConcatenatedResults['value'] = array_merge($aConcatenatedResults['value'], $aCompletedResult['value']);
 											}
 											// Report list of discovered resource group to the collection plan
-											$this->ReportObjects($aResults, $sObjectL1, $sObjectL2, $sObjectL3);
+											$this->ReportObjects($aCompletedResult, $sObjectL1, $sObjectL2, $sObjectL3);
 										}
 									}
 								}
@@ -469,13 +518,32 @@ abstract class MSJsonCollector extends JsonCollector
 	}
 
 	/**
-	 * Get list of parameters required for the collection query
+	 * Store in local JSON file the data received from Microsoft
 	 *
-	 * @return bool
+	 * @param $sJsonFile
+	 * @param $aResults
+	 * @return bool[]
+	 * @throws Exception
 	 */
-	public function GetURIParameters(): array
+	protected function StoreDataFromMS($sJsonFile, $aResults): array
 	{
-		return static::$aURIParameters;
+		$bShouldReturn = false;
+		$bReturnValue = false;
+
+		// JSON_FORCE_OBJECT makes sure that an empty json file ( {} ) is created if $aFinalResult is empty
+		$hJSON = file_put_contents($sJsonFile, json_encode($aResults, JSON_FORCE_OBJECT));
+		if ($hJSON === false) {
+			Utils::Log(LOG_ERR, "Failed to write retrieved data in '$this->sJsonFile' !");
+			$bShouldReturn = true;
+		}
+		if (empty($aResults)) {
+			Utils::Log(LOG_INFO, "Result of collect is empty !");
+			$this->RemoveDataFiles();
+			$bShouldReturn = true;
+			$bReturnValue = true;
+		}
+
+		return [$bShouldReturn, $bReturnValue];
 	}
 
 	/**
@@ -520,19 +588,10 @@ abstract class MSJsonCollector extends JsonCollector
 			}
 		}
 
-		// Store JSON data in file
-		// JSON_FORCE_OBJECT makes sure that an empty json file ( {} ) is created if $aResults is empty
-		$hJSON = file_put_contents($this->sJsonFile, json_encode($aResults, JSON_FORCE_OBJECT));
-		if ($hJSON === false) {
-			Utils::Log(LOG_ERR, "Failed to write retrieved data in '$this->sJsonFile' !");
-
-			return false;
-		}
-		if (empty($aResults)) {
-			Utils::Log(LOG_INFO, "Result of collect is empty !");
-			$this->RemoveDataFiles();
-
-			return true;    // It is important to return true here as the synchro should proceed even if no object have been retrieved.
+		// Store data from MS
+		list($bShouldReturn, $bReturnValue) = $this->StoreDataFromMS($this->sJsonFile, $aResults);
+		if ($bShouldReturn) {
+			return $bReturnValue;
 		}
 
 		return parent::Prepare();
