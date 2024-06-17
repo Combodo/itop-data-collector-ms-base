@@ -386,14 +386,48 @@ abstract class MSJsonCollector extends JsonCollector
 				}
 			} else {
 				$bSucceed = true;
-				$iCount = isset($aResults['value']) ? count($aResults['value']) : 0;
-				Utils::Log(LOG_DEBUG, 'Data for class '.$this->sMSClass.' have been retrieved from MS environment '.$iSubscription.'. Count Total = '.$iCount);
 			}
 		} catch (Exception $e) {
 			Utils::Log(LOG_WARNING, "Resource group query failed for subscription '.$iSubscription.': ".$e->getMessage());
 		}
 
 		// Return array of objects
+		return [$bSucceed, $aResults];
+	}
+
+	/**
+	 * Post URL and handle microsoft paging
+	 *
+	 * @param $iSubscription
+	 * @param $sUrl
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	protected function PostWithPaging($sUrl, $iSubscription = null): array
+	{
+		$bFirstPost = true;
+		$aResults = [];
+		do {
+			$bPostNextPage = false;
+			Utils::Log(LOG_DEBUG, "Posted URL : ".$sUrl);
+			list($bSucceed, $aOnePostResults) = $this->Post($sUrl, $iSubscription);
+			if ($bSucceed) {
+				if (array_key_exists('@odata.nextLink', $aOnePostResults) && !empty($aOnePostResults['@odata.nextLink'])) {
+					$bPostNextPage = true;
+					$sUrl = $aOnePostResults['@odata.nextLink'];
+				}
+				if ($bFirstPost) {
+					$bFirstPost = false;
+					$aResults['value'] = $aOnePostResults['value'];
+				} else {
+					$aResults['value'] = array_merge($aResults['value'], $aOnePostResults['value']);
+				}
+			}
+		} while ($bPostNextPage);
+
+		$iCount = isset($aResults['value']) ? count($aResults['value']) : 0;
+		Utils::Log(LOG_INFO, 'Data for class '.$this->sMSClass.' have been retrieved from MS environment '.$iSubscription.'. Count Total = '.$iCount);
 		return [$bSucceed, $aResults];
 	}
 
@@ -422,7 +456,7 @@ abstract class MSJsonCollector extends JsonCollector
 		switch (count(static::$aURIParameters)) {
 			case 0:
 				$sUrl = $this->BuildUrl([]);
-				list($bSucceed, $aResults) = $this->Post($sUrl);
+				list($bSucceed, $aResults) = $this->PostWithPaging($sUrl);
 				$bUrlPosted = true;
 				if ($bSucceed && !empty($aResults['value'])) {
 					$aConcatenatedResults = $aResults;
@@ -435,7 +469,7 @@ abstract class MSJsonCollector extends JsonCollector
 				if (array_key_exists(static::$aURIParameters[1], $aObjectsToConsider)) {
 					foreach ($aObjectsToConsider[static::$aURIParameters[1]] as $sObjectL1 => $aObjectL1) {
 						$sUrl = $this->BuildUrl([static::$aURIParameters[1] => $sObjectL1]);
-						list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
+						list($bSucceed, $aResults) = $this->PostWithPaging($sUrl, $sObjectL1);
 						$bUrlPosted = true;
 						if ($bSucceed && !empty($aResults['value'])) {
 							$aParameters = [
@@ -463,7 +497,7 @@ abstract class MSJsonCollector extends JsonCollector
 						if (array_key_exists(static::$aURIParameters[2], $aObjectL1)) {
 							foreach ($aObjectL1[static::$aURIParameters[2]] as $sObjectL2 => $aObjectL2) {
 								$sUrl = $this->BuildUrl([static::$aURIParameters[1] => $sObjectL1, static::$aURIParameters[2] => $sObjectL2]);
-								list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
+								list($bSucceed, $aResults) = $this->PostWithPaging($sUrl, $sObjectL1);
 								$bUrlPosted = true;
 								if ($bSucceed && !empty($aResults['value'])) {
 									$aParameters = [
@@ -503,7 +537,7 @@ abstract class MSJsonCollector extends JsonCollector
 											static::$aURIParameters[2] => $sObjectL2,
 											static::$aURIParameters[3] => $sObjectL3,
 											]);
-										list($bSucceed, $aResults) = $this->Post($sUrl, $sObjectL1);
+										list($bSucceed, $aResults) = $this->PostWithPaging($sUrl, $sObjectL1);
 										$bUrlPosted = true;
 										if ($bSucceed && !empty($aResults['value'])) {
 											$aParameters = [
