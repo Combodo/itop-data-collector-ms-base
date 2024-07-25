@@ -10,7 +10,7 @@ abstract class MSCollectionPlan extends CollectionPlan
 	 *
 	 * @param $aObjL1 : 1st level object : ex URI_PARAM_SUBSCRIPTION or URI_PARAM_GROUP
 	 * @param $aObjL2 : 2nd level object : ex URI_PARAM_RESOURCEGROUP
-	 * @param $aObjL3 : 3rd level object : ex URI_PARAM_SERVER
+	 * @param $aObjL3 : 3rd level object : ex URI_PARAM_MARIADB_SERVER
 	 * Each $aObjLi = array('class', 'id')
 	 *
 	 * @return void
