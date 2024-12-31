@@ -49,6 +49,7 @@ abstract class MSJsonCollector extends JsonCollector
 	protected $sJsonFile = '';
 	protected $aFieldsPos = [];
 	protected $oMSCollectionPlan;
+    protected $bTestMode = false;
 
 	/**
 	 * @inheritdoc
@@ -85,6 +86,15 @@ abstract class MSJsonCollector extends JsonCollector
 
 		$this->oMSCollectionPlan = MSCollectionPlan::GetPlan();
 	}
+
+    /**
+     * @param $bMode
+     * @return void
+     */
+    public function SetTestMode($bMode = false): void
+    {
+        $this->bTestMode = $bMode;
+    }
 
 	/**
 	 * Build the name of a collector based on class to collect
@@ -610,11 +620,16 @@ abstract class MSJsonCollector extends JsonCollector
 	/**
 	 * Runs the configured query to start fetching the data from the database
 	 * Store result in json data file
+     * Skip the process in tests mode. Json file should be provided "manually"
 	 *
 	 * @see jsonCollector::Prepare()
 	 */
 	public function Prepare(): bool
 	{
+        if ($this->bTestMode) {
+            return parent::Prepare();
+        }
+
 		// Check MS class is set
 		if ($this->sMSClass == '') {
 			Utils::Log(LOG_ERR, 'Parameter "class" is not defined within the current collector parameters!');
