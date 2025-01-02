@@ -603,8 +603,12 @@ abstract class MSJsonCollector extends JsonCollector
 
 		// JSON_FORCE_OBJECT makes sure that an empty json file ( {} ) is created if $aFinalResult is empty
 		$hJSON = file_put_contents($sJsonFile, json_encode($aResults, JSON_FORCE_OBJECT));
-		if ($hJSON === false) {
-			Utils::Log(LOG_ERR, "Failed to write retrieved data in '$this->sJsonFile' !");
+        if ($hJSON === false) {
+            $sJsonFile = APPROOT.$sJsonFile;
+            $hJSON = file_put_contents($sJsonFile, json_encode($aResults, JSON_FORCE_OBJECT));
+        }
+        if ($hJSON === false) {
+			Utils::Log(LOG_ERR, "Failed to write retrieved data in '$sJsonFile' !");
 			$bShouldReturn = true;
 		}
 		if (empty($aResults)) {
