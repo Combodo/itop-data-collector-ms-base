@@ -16,11 +16,11 @@
 
 SetupWebPage::AddModule(
 	__FILE__, // Path to the current file, all other file names are relative to the directory containing this file
-	'itop-data-collector-ms-base/2.3.0-dev',
+	'itop-data-collector-ms-base/2.3.0',
 	array(
 		// Identification
 		//
-		'label' => 'Data collector base for Microsoft Azure',
+		'label' => 'Data collector base for Microsoft Azure and Graph',
 		'category' => 'collector',
 
 		// Setup
