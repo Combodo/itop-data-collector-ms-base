@@ -279,7 +279,7 @@ abstract class MSJsonCollector extends JsonCollector
 		$aEmpty = [];
 
 		try {
-			$sResponse = utils::DoPostRequest($sURL, $aData, null, $aEmpty, $aEmpty);
+			$sResponse = Utils::DoPostRequest($sURL, $aData, null, $aEmpty, $aEmpty);
 			Utils::Log(LOG_DEBUG, "Response to authentication request :".$sResponse);
 			$aResults = json_decode($sResponse, true);
 		} catch (Exception $e) {
@@ -377,7 +377,7 @@ abstract class MSJsonCollector extends JsonCollector
 		$sOptionnalHeaders = implode("\n", $aOptionnalHeaders);
 		$aCurlOptions = array(CURLOPT_POSTFIELDS => "");
 		try {
-			$sResponse = utils::DoPostRequest($sUrl, $aEmpty, $sOptionnalHeaders, $aEmpty, $aCurlOptions);
+			$sResponse = Utils::DoPostRequest($sUrl, $aEmpty, $sOptionnalHeaders, $aEmpty, $aCurlOptions);
 			$aResults = json_decode($sResponse, true);
 			if (isset($aResults['error'])) {
 				Utils::Log(LOG_ERR,

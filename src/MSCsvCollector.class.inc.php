@@ -130,9 +130,9 @@ abstract class MSCsvCollector extends CSVCollector
 				try {
 					// Write the CSV data
 					fputcsv($hOutputCSV, $aHeaderData, ';');
-				} catch (IgnoredRowException $e) {
+				} catch (Exception $e) {
 					// Skip this line
-					Utils::Log(LOG_DEBUG, "Ignoring the line $iLineIndex. Reason: ".$e->getMessage());
+					Utils::Log(LOG_DEBUG, "Header parameters have not been copied in $sCsvFilePath. Reason: ".$e->getMessage());
 				}
 			}
 		}
