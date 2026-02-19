@@ -190,7 +190,7 @@ abstract class MSJsonCollector extends JsonCollector
 			if ($hCSV === false) {
 				Utils::Log(LOG_ERR, "Failed to open '$sTokenFile' for reading...");
 			} else {
-				while (($aData = fgetcsv($hCSV, 0, $this->sSeparator)) !== false) {
+				while (($aData = fgetcsv($hCSV, 0, $this->sSeparator, escape: '\\')) !== false) {
 					//process
 					switch ($aData[0]) {
 						case self::BEARER_TOKEN_NAME:
@@ -319,7 +319,7 @@ abstract class MSJsonCollector extends JsonCollector
 				array(self::BEARER_TOKEN_EXPIRATION_DELAY_NAME, $this->sBearerTokenExpirationDelay),
 			];
 			foreach ($aData as $aValue) {
-				fputcsv($hCSV, $aValue, $this->sSeparator);
+				fputcsv($hCSV, $aValue, $this->sSeparator, escape: '\\');
 			}
 			fclose($hCSV);
 
